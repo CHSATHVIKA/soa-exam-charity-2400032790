@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - charity-postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -17,7 +17,7 @@ services:
       retries: 10
 
   backend:
-    image: ${DOCKERHUB_USERNAME:-chsathvika}/docker-backend-2400032790:latest
+    image: ${DOCKERHUB_USERNAME:-chsathvika03}/docker-backend-2400032790:latest
     container_name: backend-2400032790
     build:
       context: ./backend
@@ -34,7 +34,7 @@ services:
         condition: service_healthy
 
   frontend:
-    image: ${DOCKERHUB_USERNAME:-chsathvika}/docker-frontend-2400032790:latest
+    image: ${DOCKERHUB_USERNAME:-chsathvika03}/docker-frontend-2400032790:latest
     container_name: frontend-2400032790
     build:
       context: ./frontend
