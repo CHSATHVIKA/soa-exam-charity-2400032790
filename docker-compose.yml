@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-2400032790
+    environment:
+      POSTGRES_DB: exam_2400032790
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - charity-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d exam_2400032790"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: ${DOCKERHUB_USERNAME:-chsathvika}/docker-backend-2400032790:latest
+    container_name: backend-2400032790
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/exam_2400032790
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      EUREKA_CLIENT_ENABLED: "false"
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME:-chsathvika}/docker-frontend-2400032790:latest
+    container_name: frontend-2400032790
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8081/api/charities
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  charity-postgres-data:

@@ -1,0 +1,75 @@
+package com.klef.soa.docker.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+
+public class CharityDTO {
+
+	private Long id;
+
+	@NotBlank(message = "Fundraiser name is required")
+	private String fundraiserName;
+
+	@NotNull(message = "Target amount is required")
+	@PositiveOrZero(message = "Target amount must be zero or greater")
+	private Double targetAmount;
+
+	@NotNull(message = "Amount raised is required")
+	@PositiveOrZero(message = "Amount raised must be zero or greater")
+	private Double amountRaised;
+
+	@NotNull(message = "Completed status is required")
+	private Boolean completed;
+
+	public CharityDTO() {
+	}
+
+	public CharityDTO(Long id, String fundraiserName, Double targetAmount, Double amountRaised, Boolean completed) {
+		this.id = id;
+		this.fundraiserName = fundraiserName;
+		this.targetAmount = targetAmount;
+		this.amountRaised = amountRaised;
+		this.completed = completed;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getFundraiserName() {
+		return fundraiserName;
+	}
+
+	public void setFundraiserName(String fundraiserName) {
+		this.fundraiserName = fundraiserName;
+	}
+
+	public Double getTargetAmount() {
+		return targetAmount;
+	}
+
+	public void setTargetAmount(Double targetAmount) {
+		this.targetAmount = targetAmount;
+	}
+
+	public Double getAmountRaised() {
+		return amountRaised;
+	}
+
+	public void setAmountRaised(Double amountRaised) {
+		this.amountRaised = amountRaised;
+	}
+
+	public Boolean getCompleted() {
+		return completed;
+	}
+
+	public void setCompleted(Boolean completed) {
+		this.completed = completed;
+	}
+}
