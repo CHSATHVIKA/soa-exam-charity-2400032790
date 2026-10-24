@@ -14,38 +14,39 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/charities")
 public class CharityController {
 	private CharityService service;
-
 
 	public CharityController(CharityService service) {
 		this.service = service;
 	}
-	
 
-	@PostMapping
+	@GetMapping("/")
+	public String home() {
+		return "HOME";
+	}
+
+	@PostMapping({"/Add", "/api/charities"})
 	public CharityEntity add(@Valid @RequestBody CharityEntity c) {
 		return service.saveFund(c);
 	}
-	
-	@GetMapping
+
+	@GetMapping({"/DisplayAll", "/api/charities"})
 	public List<CharityEntity> displayAll() {
 		return service.displayAll();
 	}
 
-	@GetMapping("/{id}")
+	@GetMapping({"/Display/{id}", "/api/charities/{id}"})
 	public ResponseEntity<CharityEntity> getById(@PathVariable Long id) {
 		return service.getFundById(id)
 				.map(ResponseEntity::ok)
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
-	
-	@PutMapping("/{id}")
+
+	@PutMapping({"/Update/{id}", "/api/charities/{id}"})
 	public ResponseEntity<CharityEntity> update(@PathVariable Long id,
 			@Valid @RequestBody CharityEntity c) {
 		Optional<CharityEntity> updated = service.updateFund(id, c);
@@ -53,13 +54,11 @@ public class CharityController {
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
-	@DeleteMapping("/{id}")
+	@DeleteMapping({"/Delete/{id}", "/api/charities/{id}"})
 	public ResponseEntity<String> delete(@PathVariable Long id) {
 		if (!service.deleteFund(id)) {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok("fund deleted successfully");
-	    }
-
-	
+	}
 }
