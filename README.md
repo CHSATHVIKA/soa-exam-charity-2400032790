@@ -4,7 +4,7 @@
 - **Base package:** `com.klef.soa.docker`
 - **Database table:** `exam_2400032790` (PostgreSQL)
 
-A full-stack app for managing charity fundraisers. You can add, view, edit and delete records.
+A full-stack web app for managing charity fundraisers. You can add, view, edit and delete records.
 The frontend is React with Bootstrap, and the backend is Spring Boot with a REST API and Swagger UI.
 Both run as Docker containers.
 
