@@ -8,7 +8,7 @@ public class CrudServiceProjectApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(CrudServiceProjectApplication.class, args);
-		System.out.println("Crud Service Project is running !!");
+		System.out.println("Charity backend is running on port 8081");
 	}
 
 }

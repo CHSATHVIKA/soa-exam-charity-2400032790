@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom'
-import { useCharity } from '../context/CharityContext'
+import { useCharity, SWAGGER_URL } from '../context/CharityContext'
 
-const SWAGGER_URL = 'http://localhost:8081/swagger-ui/index.html'
 
 export default function Navbar() {
   const { charities, loading, fetchCharities } = useCharity()

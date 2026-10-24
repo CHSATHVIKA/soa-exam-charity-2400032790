@@ -2,7 +2,17 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 
 const CharityContext = createContext(null)
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081/api/charities'
+export const API_HOST = (import.meta.env.VITE_API_URL || 'http://localhost:8081').replace(/\/+$/, '')
+export const SWAGGER_URL = `${API_HOST}/swagger-ui/index.html`
+
+// Turn a failed response into a readable message (field errors from backend validation first)
+async function readError(response, fallback) {
+  const data = await response.json().catch(() => ({}))
+  if (data.errors && Object.keys(data.errors).length > 0) {
+    return Object.values(data.errors).join(', ')
+  }
+  return data.message || `${fallback} (HTTP ${response.status})`
+}
 
 export function CharityProvider({ children }) {
   const [charities, setCharities] = useState([])
@@ -23,24 +33,35 @@ export function CharityProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
 
+  // Runs a request; network failures (backend down) get a clear message
+  const request = useCallback(async (path, options, fallback) => {
+    let response
+    try {
+      response = await fetch(`${API_HOST}${path}`, options)
+    } catch {
+      throw new Error(`Cannot reach the backend at ${API_HOST}. Is it running?`)
+    }
+    if (!response.ok) {
+      throw new Error(await readError(response, fallback))
+    }
+    return response
+  }, [])
+
   // 1. GET all
   const fetchCharities = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(API_BASE)
-      if (!response.ok) {
-        throw new Error(`Server returned HTTP ${response.status}`)
-      }
+      const response = await request('/DisplayAll', undefined, 'Unable to load records')
       const data = await response.json()
       setCharities(Array.isArray(data) ? data : [])
     } catch (err) {
       setError(err.message)
-      showToast('danger', `Unable to load charities: ${err.message}`)
+      showToast('danger', err.message)
     } finally {
       setLoading(false)
     }
-  }, [showToast])
+  }, [request, showToast])
 
   useEffect(() => {
     fetchCharities()
@@ -48,64 +69,57 @@ export function CharityProvider({ children }) {
 
   // 2. GET by ID
   const getCharityById = useCallback(async (id) => {
-    const response = await fetch(`${API_BASE}/${id}`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch record #${id}`)
-    }
+    const response = await request(`/Display/${id}`, undefined, `Failed to fetch record #${id}`)
     return await response.json()
-  }, [])
+  }, [request])
 
-  // 3. POST new
+  // 3. POST new (no id is sent, the database generates it)
   const addCharity = useCallback(async (payload) => {
-    const response = await fetch(API_BASE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    const data = await response.json().catch(() => ({}))
-    if (!response.ok) {
-      let msg = data.message || 'Creation failed'
-      if (data.errors && typeof data.errors === 'object') {
-        msg = Object.values(data.errors).join(', ')
-      }
-      throw new Error(msg)
+    try {
+      const response = await request('/Add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }, 'Creation failed')
+      const data = await response.json()
+      showToast('success', `Fundraiser #${data.id} created successfully!`)
+      await fetchCharities()
+      return data
+    } catch (err) {
+      showToast('danger', err.message)
+      throw err
     }
-    showToast('success', `Fundraiser #${data.id} created successfully!`)
-    await fetchCharities()
-    return data
-  }, [fetchCharities, showToast])
+  }, [request, fetchCharities, showToast])
 
   // 4. PUT update
   const updateCharity = useCallback(async (id, payload) => {
-    const response = await fetch(`${API_BASE}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    const data = await response.json().catch(() => ({}))
-    if (!response.ok) {
-      let msg = data.message || 'Update failed'
-      if (data.errors && typeof data.errors === 'object') {
-        msg = Object.values(data.errors).join(', ')
-      }
-      throw new Error(msg)
+    try {
+      const response = await request(`/Update/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }, 'Update failed')
+      const data = await response.json()
+      showToast('success', `Fundraiser #${id} updated successfully!`)
+      await fetchCharities()
+      return data
+    } catch (err) {
+      showToast('danger', err.message)
+      throw err
     }
-    showToast('success', `Fundraiser #${id} updated successfully!`)
-    await fetchCharities()
-    return data
-  }, [fetchCharities, showToast])
+  }, [request, fetchCharities, showToast])
 
   // 5. DELETE
   const deleteCharity = useCallback(async (id) => {
-    const response = await fetch(`${API_BASE}/${id}`, {
-      method: 'DELETE',
-    })
-    if (!response.ok) {
-      throw new Error(`Failed to delete record #${id}`)
+    try {
+      await request(`/Delete/${id}`, { method: 'DELETE' }, `Failed to delete record #${id}`)
+      showToast('success', `Fundraiser #${id} was deleted successfully.`)
+      await fetchCharities()
+    } catch (err) {
+      showToast('danger', err.message)
+      throw err
     }
-    showToast('success', `Fundraiser #${id} was deleted successfully.`)
-    await fetchCharities()
-  }, [fetchCharities, showToast])
+  }, [request, fetchCharities, showToast])
 
   // Aggregated KPI Stats
   const stats = useMemo(() => {

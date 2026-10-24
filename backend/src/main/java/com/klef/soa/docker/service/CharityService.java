@@ -2,13 +2,18 @@ package com.klef.soa.docker.service;
 
 import java.util.List;
 import java.util.Optional;
-import com.klef.soa.docker.entity.CharityEntity;
+
+import com.klef.soa.docker.dto.CharityDTO;
 
 public interface CharityService {
-	
-	List<CharityEntity> displayAll();
-	Optional<CharityEntity> getFundById(Long id);
-	CharityEntity saveFund(CharityEntity c);
-	Optional<CharityEntity> updateFund(Long id, CharityEntity updated);
+
+	List<CharityDTO> displayAll();
+
+	Optional<CharityDTO> getFundById(Long id);
+
+	CharityDTO saveFund(CharityDTO dto);
+
+	Optional<CharityDTO> updateFund(Long id, CharityDTO dto);
+
 	boolean deleteFund(Long id);
 }

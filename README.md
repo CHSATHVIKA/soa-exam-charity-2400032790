@@ -1,101 +1,81 @@
-# Full-Stack SOA Charity Management System
+# Charity Fundraiser Management – Full Stack
 
-**Student ID:** `2400032790`  
-**Base Package:** `com.klef.soa.docker`  
-**Database Table:** `exam_2400032790`  
+- **Student ID:** 2400032790
+- **Base package:** `com.klef.soa.docker`
+- **Database table:** `exam_2400032790` (PostgreSQL)
 
-A production-ready Full-Stack Service-Oriented Architecture (SOA) application for managing charity campaigns and fundraiser records. Built with Spring Boot REST API, React 19 + Bootstrap 5.3 frontend, PostgreSQL database, Docker containerization, and automated CI/CD via GitHub Actions.
+A full-stack app for managing charity fundraisers. You can add, view, edit and delete records.
+The frontend is React with Bootstrap, and the backend is Spring Boot with a REST API and Swagger UI.
+Both run as Docker containers.
 
----
-
-## 📁 Repository Structure
+## Project structure
 
 ```text
-├── .github/
-│   └── workflows/
-│       └── docker-build-push.yml    # GitHub Actions workflow for automated image build & push
-├── backend/
-│   ├── src/
-│   │   ├── main/java/com/klef/soa/docker/
-│   │   │   ├── configuration/       # Swagger OpenAPI & CORS Web configuration
-│   │   │   ├── controller/          # REST Endpoints (/api/charities) & Global Exception Handler
-│   │   │   ├── dto/                 # Request/Response Data Transfer Objects & Error schema
-│   │   │   ├── entity/              # JPA Entity mapping to table exam_2400032790
-│   │   │   ├── repository/          # Spring Data JPA Repository
-│   │   │   ├── service/             # Business Service interface
-│   │   │   └── service/impl/        # Business Service implementation
-│   │   └── resources/
-│   │       └── application.properties
-│   ├── pom.xml                      # Maven configuration with Spring Boot 3 & OpenAPI
-│   └── Dockerfile                   # Multi-stage Docker build for backend service
-├── frontend/
-│   ├── src/
-│   │   ├── components/              # Navbar, Footer, Modal, Skeleton, StatCards, Toast
-│   │   ├── context/                 # React Context API for centralized charity state management
-│   │   ├── pages/                   # Dashboard, Directory, AddRecord, EditRecord, Details
-│   │   ├── App.jsx                  # React Router configuration
-│   │   ├── main.jsx                 # Application entry point with Error Boundary
-│   │   └── styles.css               # Modern Bootstrap styling & custom theme
-│   ├── package.json                 # Node dependencies (Bootstrap 5.3, Icons, React Router)
-│   ├── nginx.conf                   # Production Nginx reverse proxy & SPA routing configuration
-│   └── Dockerfile                   # Multi-stage Vite build + Nginx Alpine runtime
-├── docker-compose.yml               # Multi-container orchestration (PostgreSQL, Backend, Frontend)
-├── .gitignore                       # Clean repository ignore patterns
-└── README.md                        # Documentation & setup guide
+.github/workflows/docker-build-push.yml   GitHub Actions: build and push both images
+backend/                                  Spring Boot app + Dockerfile
+  src/main/java/com/klef/soa/docker/
+    configuration/    Swagger and CORS config
+    controller/       REST endpoints and error handler
+    dto/              CharityDTO (request/response), ErrorResponse
+    entity/           CharityEntity (auto-generated id)
+    repository/       CharityRepository (Spring Data JPA)
+    service/          CharityService interface
+    service/impl/     CharityServiceImpl
+frontend/                                 React + Vite + Bootstrap app + Dockerfile
+docker-compose.yml                        Runs postgres, backend and frontend together
 ```
 
----
+## API endpoints
 
-## 🚀 Key Features
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/` | Home check |
+| POST | `/Add` | Add a fundraiser (no id in the request, the database generates it) |
+| GET | `/DisplayAll` | List all fundraisers |
+| GET | `/Display/{id}` | Get one fundraiser |
+| PUT | `/Update/{id}` | Update a fundraiser |
+| DELETE | `/Delete/{id}` | Delete a fundraiser |
 
-- **Frontend (Port 3000 / 5173)**:
-  - Rich modern UI built with React 19, Bootstrap 5.3, and Bootstrap Icons.
-  - Candidate badge (`SOA 2400032790`) in navbar and comprehensive tech stack footer on every page.
-  - Complete CRUD:
-    - **Add Record Form**: Automatically generates ID on the backend (strictly no user ID input).
-    - **Directory & Table**: Color-coded action buttons (Green **Edit**, Red **Delete**), live search, filter, and sorting.
-    - **Dashboard**: Real-time KPI statistics cards, progress bars, and recent activity.
-    - **Details View**: Individual campaign breakdown with goal percentage and status badges.
-  - Robust client-side validation, error boundaries, loading skeletons, and toast feedback.
+Sample request body:
 
-- **Backend (Port 8081)**:
-  - Spring Boot 3.4 RESTful architecture under package `com.klef.soa.docker`.
-  - Layered architecture: `configuration`, `controller`, `dto`, `entity`, `repository`, `service`, `service.impl`.
-  - Full backend validation (`@NotBlank`, `@NotNull`, `@PositiveOrZero`) with structured JSON error responses.
-  - Integrated interactive Swagger UI / OpenAPI 3.0 documentation.
+```json
+{ "fundraiserName": "School Books Drive", "targetAmount": 50000, "amountRaised": 12000, "completed": false }
+```
 
-- **Database (PostgreSQL)**:
-  - Table: `exam_2400032790` with auto-incrementing identity primary key `id`.
+## Validation
 
-- **Containerization & CI/CD**:
-  - `docker-frontend-2400032790`: Nginx Alpine serving optimized production assets.
-  - `docker-backend-2400032790`: Multi-stage compiled Eclipse Temurin JRE container.
-  - Automated GitHub Actions workflow pushing to Docker Hub on every commit to `main`.
+The same rules apply in the frontend form and in the backend DTO:
 
----
+- `fundraiserName`: required, 3 to 100 characters
+- `targetAmount`: required, greater than 0
+- `amountRaised`: required, 0 or more
+- `completed`: required
 
-## 🛠️ Running with Docker Compose
+When a request is invalid, the backend returns `400` with the error for each field. A record that doesn't exist returns `404`.
 
-Ensure Docker Desktop is running, then execute:
+## Docker images
+
+- `chsathvika03/docker-backend-2400032790:latest` (build context `./backend`)
+- `chsathvika03/docker-frontend-2400032790:latest` (build context `./frontend`)
+
+On every push to `main`, the GitHub Actions workflow builds and pushes both images to Docker Hub.
+
+## Run with Docker Compose
 
 ```bash
+docker compose pull
 docker compose up -d
 ```
 
-### Verified Service URLs:
-- **Frontend Portal:** [http://localhost:3000](http://localhost:3000)
-- **Backend API:** [http://localhost:8081/api/charities](http://localhost:8081/api/charities)
-- **Swagger UI Documentation:** [http://localhost:8081/swagger-ui/index.html](http://localhost:8081/swagger-ui/index.html)
-- **Database:** PostgreSQL on `localhost:5432` (`exam_2400032790`)
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| Backend | http://localhost:8081 |
+| Swagger UI | http://localhost:8081/swagger-ui/index.html |
+| PostgreSQL | localhost:5433 |
 
-To stop all containers:
+Stop the containers:
+
 ```bash
 docker compose down
 ```
-
----
-
-## 🐳 Docker Hub Images
-
-- **Backend:** `docker-backend-2400032790`
-- **Frontend:** `docker-frontend-2400032790`

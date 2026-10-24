@@ -8,8 +8,6 @@
 
 # Maven
 backend/target/
-CrudServiceProject/target/
-EurekaServer/target/
 
 # Node
 frontend/node_modules/

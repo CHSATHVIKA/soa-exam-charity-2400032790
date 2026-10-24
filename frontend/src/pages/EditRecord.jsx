@@ -137,7 +137,7 @@ export default function EditRecord() {
                 <span className="badge bg-primary font-monospace">Record #{id}</span>
               </div>
               <p className="text-muted small mb-0">
-                Update details for this campaign and persist changes via <code>PUT /api/charities/{id}</code>.
+                Update details for this campaign and persist changes via <code>PUT /Update/{id}</code>.
               </p>
             </div>
             <Link to={`/details/${id}`} className="btn btn-outline-secondary btn-sm rounded-pill px-3">
